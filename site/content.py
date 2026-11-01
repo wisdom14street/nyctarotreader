@@ -75,7 +75,9 @@ def deck_pages():
                     'Your own deck, after your first reading',
                     '<p>Lots of people leave their first reading wanting to try it themselves. This shelf keeps it simple: easy first decks, kits that come with a book, '
                     'and a few short books for the first weeks.</p>', p_intro, rank_cols=('beginner-tarot', 'start-your-tarot-journey', 'most-popular-tarot-decks'),
-                    crumb_label='Your own deck', feature_kinds=('deck', 'kit'))
+                    crumb_label='Your own deck', feature_kinds=('deck', 'kit'), feat_h='Good first decks',
+                    note='Tap Add on anything you like. When you are ready, one checkout covers it all; Namaste Bookshop takes the payment and posts it to you.',
+                    search=('Search first decks and books', 'Try a deck name like Rider-Waite, or a word like beginner or pocket.'))
 
 def shell(pg):
     nav = ''.join(f'<a href="{h}"' + (' class="here"' if pg['path'] == h else '') + f'>{t}</a>' for h, t in NAV)
@@ -102,7 +104,7 @@ def pages():
           ld=[G.shop_ld()])
     wf = [('Can I just walk in?', 'You can walk in and ask. Whether someone can read for you right away depends on who is working and whether they have an open slot. Calling ahead on ' + G.PHONE + ' saves a wasted trip.'),
           ('How far ahead should I book?', 'Same-day booking often works. Weekends and evenings fill faster, so book earlier for those.'),
-          ('Can I pay with cash?', 'If online booking gives you trouble, you can come in and pay cash. Call first so we can save you a seat.')]
+          ('Can I pay with cash?', 'Yes. Cash at the counter is fine if the online booking page will not cooperate; phone us first and we will hold a seat.')]
     wb = ('<section class="pg"><h1>Walk in, or book a time?</h1><div class="vs"><div><h2>Booking</h2><ul><li>Your seat is held</li><li>You pick the reader</li><li>You pay up front online</li></ul></div>'
           '<div><h2>Walking in</h2><ul><li>Good if you are already nearby</li><li>Depends on who is free</li><li>Check with staff when you arrive</li></ul></div></div>'
           '<p>If you have your heart set on a reading today, booking is the safer bet. Open <a href="/book-today/">today\'s readers</a>, pick one and choose an open time.</p>'
@@ -158,7 +160,7 @@ def pages():
     bt = ('<section class="pg floor"><h1>Who can read for you today</h1><p>Pick a reader, check their prices, then tap through to their live open times. Short sessions are the easiest to get same-day.</p>'
           '<h2>At the 14th Street tables</h2><ul>' + ''.join(row(k) for k, _ in FLOOR) + '</ul>'
           '<h2>Upstairs, by appointment</h2><ul>' + ''.join(row(k) for k in UP) + '</ul></section>')
-    G.add('/book-today/', 'Book a Tarot Reading Today in NYC: Our Readers | NYC Tarot Reader', 'Every NYC Tarot Reader reader with prices and same-day booking, at the 14th Street tables or upstairs by appointment.', bt,
+    G.add('/book-today/', 'Book a Tarot Reading Today in NYC: Our Readers | NYC Tarot Reader', 'Every NYC Tarot Reader reader with prices and same-day booking, downstairs on 14th Street or upstairs by appointment.', bt,
           crumbs=[('Today', '/'), ('Readers', '/book-today/')])
     G.add('/privacy/', 'Privacy | NYC Tarot Reader', 'Analytics and booking privacy on nyctarotreader.com.',
           '<section class="pg">' + G.privacy('nyctarotreader.com does not collect names, emails or payments itself; reserving opens your reader\'s scheduling page.') + '</section>', crumbs=[('Today', '/'), ('Privacy', '/privacy/')])
