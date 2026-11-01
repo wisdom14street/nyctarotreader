@@ -32,17 +32,61 @@ MORE = {'rebecca-martinez': 'Hears guidance as she reads; sessions in Spanish or
         'mallika': 'Lenormand cards first, then tarot to explain them.',
         'lu-camy': 'Reads her own oracle deck; also a hypnotist.',
         'mychal-a-bryan': 'Hour-long chart or Qabalistic tarot sessions, from afar.'}
-NAV = [('/', 'Today'), ('/book-today/', 'Readers'), ('/walk-in-or-book/', 'Walk in or book'), ('/what-to-ask/', 'What to ask'), ('/what-it-costs/', 'Cost'), ('/at-the-table/', 'At the table'), ('/find-the-shop/', 'Find us')]
+NAV = [('/', 'Today'), ('/book-today/', 'Readers'), ('/walk-in-or-book/', 'Walk in or book'), ('/what-to-ask/', 'What to ask'), ('/what-it-costs/', 'Cost'), ('/at-the-table/', 'At the table'), ('/your-own-deck/', 'Your own deck'), ('/find-the-shop/', 'Find us')]
+CART = True
+SHOP_PATH = '/your-own-deck/'
+import re
+import minishop as MS
+COLLECTIONS = ['beginner-tarot', 'start-your-tarot-journey', 'tarot-kits-learning-sets', 'rider-waite-smith-tarot-decks', 'pocket-tarot', 'tarot-books', 'most-popular-tarot-decks']
+STYLES = [('rider-waite-smith-tarot-decks', 'Classic Rider-Waite-Smith scenes'), ('pocket-tarot', 'Pocket size'), ('most-popular-tarot-decks', 'Popular with first-timers'),
+          ('tarot-kits-learning-sets', 'Book in the box')]
+KINDS = {'deck': ('First deck', 'First decks'), 'kit': ('Starter kit', 'Starter kits'), 'book': ('Beginner book', 'Beginner books'),
+         'cloth': ('Reading cloth', 'Reading cloths'), 'bag': ('Deck pouch', 'Pouches & bags')}
+FIRST = r'beginner|for beginners|starter|first|easy|simple|made easy|basics|\b101\b|introduc|learn|everyday|quick|little book|complete guide|essential|how to|card a day|plain|your tarot'
+def SELECT(p, C):
+    t = p['title']; ty = (p.get('product_type') or '').strip(); h = p['handle']; tl = t.lower(); inc = lambda c: h in C.get(c, ())
+    if re.search(r'wholesale|display of \d+|gift card|\bmins? reading', tl) or ty in ('Readings', 'Daily Reader'): return None
+    if re.search(r'altar cloth|tarot cloth|reading cloth', tl): return 'cloth'
+    if re.search(r'\b(pouch|bag)\b', tl) and re.search(r'tarot', tl) and ty not in ('books', 'Book', 'Tarot Deck', 'Oracle Cards', 'Oracle Deck'): return 'bag'
+    starter = inc('beginner-tarot') or inc('start-your-tarot-journey') or inc('tarot-kits-learning-sets')
+    if ty in ('books', 'Book', 'Books', 'Tarot Book') or inc('tarot-books'):
+        if re.search(r'\bkit\b|box set|deck (and|&) book|book (and|&) (deck|cards)', tl) and 'tarot' in tl: return 'kit'
+        return 'book' if 'tarot' in tl and re.search(FIRST, tl) else None
+    if re.search(r'oracle|lenormand|kipper', tl): return None
+    if inc('tarot-kits-learning-sets') or (ty in ('Tarot Set', 'Tarot Kit')) or (starter and re.search(r'\bkit\b|box set|deck (and|&) book|book set', tl)): return 'kit'
+    if starter and ty in ('Tarot Deck', 'Mini Deck', ''): return 'deck'
+    if ty in ('Tarot Deck', 'Mini Deck') and (inc('rider-waite-smith-tarot-decks') or inc('most-popular-tarot-decks') or inc('pocket-tarot')): return 'deck'
+    return None
+SHELVES = [('first-decks', '/your-own-deck/decks/', ('deck',), 'First decks', 'A First Tarot Deck',
+            'Decks that are easy to start with: clear picture on every card, including the numbered ones, and most follow the same layout readers at our tables learned on.'),
+           ('starter-kits', '/your-own-deck/kits/', ('kit',), 'Starter kits', 'Tarot Starter Kits',
+            'A deck boxed with a real book, so you can keep going at home after your first reading.'),
+           ('beginner-books', '/your-own-deck/books/', ('book',), 'Beginner books', 'Tarot Books for Beginners',
+            'Short, friendly books that explain what each card means and how to lay a simple spread.'),
+           ('cloths-and-pouches', '/your-own-deck/cloths-and-pouches/', ('cloth', 'bag'), 'Cloths & pouches', 'Reading Cloths and Deck Pouches',
+            'A cloth to lay your cards on and a pouch to carry the deck in. Nice to have, never required.')]
+def p_intro(x):
+    if x['kind'] in ('deck', 'kit'): return '<p class="pnote">Not sure yet? Have a reading first and ask the reader which deck they started on. <a href="/book-today/">See who is reading today</a>.</p>'
+    if x['kind'] == 'book': return '<p class="pnote">Reads well next to any deck on our <a href="/your-own-deck/decks/">first decks</a> shelf.</p>'
+    return '<p class="pnote">Optional. Plenty of readers use a bare table.</p>'
+def deck_pages():
+    return MS.build(SELECT, COLLECTIONS, STYLES, KINDS, SHELVES, '/your-own-deck/', 'Your First Tarot Deck: Beginner Decks, Kits & Books | NYC Tarot Reader',
+                    'After your first reading, take a deck home: beginner-friendly tarot decks, starter kits with a book, short beginner books, and cloths and pouches.',
+                    'Your own deck, after your first reading',
+                    '<p>Lots of people leave their first reading wanting to try it themselves. This shelf keeps it simple: easy first decks, kits that come with a book, '
+                    'and a few short books for the first weeks.</p>', p_intro, rank_cols=('beginner-tarot', 'start-your-tarot-journey', 'most-popular-tarot-decks'),
+                    crumb_label='Your own deck', feature_kinds=('deck', 'kit'))
 
 def shell(pg):
     nav = ''.join(f'<a href="{h}"' + (' class="here"' if pg['path'] == h else '') + f'>{t}</a>' for h, t in NAV)
     return (f'<body><a class="skip" href="#main">Skip to content</a><div class="strip">First tarot reading in New York? Start here.</div>'
-            f'<header class="hdr"><a class="nm" href="/">NYC<span>Tarot Reader</span></a><a class="today" href="/book-today/">Book for today</a></header>'
+            f'<header class="hdr"><a class="nm" href="/">NYC<span>Tarot Reader</span></a><span class="hr"><a class="today" href="/book-today/">Book for today</a>{G.cart_button()}</span></header>'
             f'<nav class="tabs" aria-label="Guide">{nav}</nav><main id="main">{pg["body"]}</main>'
             f'<footer class="ftr"><p><b>NYC Tarot Reader</b> &middot; first tarot readings on West 14th Street. Inside Namaste Bookshop, {G.ADDR}. Operated by Wealth Edge Ventures Inc.</p>'
             f'<p><a href="tel:{G.TEL}">{G.PHONE}</a> &middot; <a href="mailto:{G.EMAIL}">{G.EMAIL}</a> &middot; <a href="/privacy/">Privacy</a></p></footer></body></html>')
 
 def pages():
+    deck_pages()
     home = (f'<section class="ticket"><p class="stub">Admit one &middot; NYC Tarot Reader &middot; 2 W 14th St</p><h1>Get your first tarot reading today</h1>'
             f'<p class="sub">No experience needed and nothing to prepare except a question. This short guide walks you from "I have never done this" to sitting at the table on 14th Street, a few steps from Fifth Avenue.</p>'
             f'<p class="btns"><a class="go" href="/book-today/">See who can read for me today</a><a class="alt" href="tel:{G.TEL}">Call {G.PHONE}</a></p></section>'
@@ -51,7 +95,8 @@ def pages():
             f'<p>Readers keep their own schedules within those hours; each profile\'s booking button shows that reader\'s live open times.</p></section>'
             f'<section class="floor"><h2>Readers at our 14th Street tables</h2><p>Any of them is a fine choice for a first reading. Tap a name for their prices and times.</p><ul>'
             + ''.join(f'<li><a href="/readers/{k}/"><b>{E(R[k]["name"])}</b><span>{E(l)}</span><em>from ${R[k]["from"]}</em></a></li>' for k, l in FLOOR) + '</ul>'
-            f'<p class="sm">More readers work in private rooms upstairs; <a href="/book-today/">see everyone</a>.</p></section>')
+            f'<p class="sm">More readers work in private rooms upstairs; <a href="/book-today/">see everyone</a>.</p></section>'
+            + f'<section class="after"><h2>After the reading: your own deck</h2><p>Want to try it at home? We keep a short shelf of easy first decks, starter kits and beginner books.</p><p><a class="go" href="/your-own-deck/">See first decks</a></p></section>')
     G.add('/', 'NYC Tarot Reader | Your First Tarot Reading in New York, Today',
           'Never had a tarot reading? NYC Tarot Reader gets you one today on West 14th Street, Manhattan: five simple steps, real prices, and readers you can book now.', home,
           ld=[G.shop_ld()])
@@ -123,7 +168,9 @@ NOTFOUND = '<section class="pg"><h1>Wrong turn</h1><p>This page is not part of t
 
 CSS = """.card{display:flex;gap:16px;align-items:center}.card img{width:120px;height:120px;object-fit:cover;border-radius:12px;flex:none}.card h1{margin:0}
 table.svc{border-collapse:collapse;width:100%;background:#fff}table.svc td{padding:8px 12px;border-bottom:1px solid var(--sand)}table.svc td+td{text-align:right;font-weight:700;color:var(--clay)}
-:root{--clay:#b4532a;--cream:#fdf6ec;--char:#2b2522;--sand:#f1e2cc}
+:root{--clay:#b4532a;--cream:#fdf6ec;--char:#2b2522;--sand:#f1e2cc;--ink:#2b2522;--accent:#b4532a;--onaccent:#fff;--onink:#fff;--paper:#fdf6ec;--soft:#f1e2cc;--body:'Source Serif 4',Georgia,serif;--display:'Bricolage Grotesque',system-ui,sans-serif;--btnr:8px;--r:10px;--line:#e3d2b8;--muted:#6b5f57;--focus:#b4532a}
+.hr{display:flex;align-items:center;gap:14px}.cartbtn{position:relative;display:block;color:var(--char);width:28px;height:28px}.cartbtn svg{width:26px;height:26px}.cartn{position:absolute;top:-6px;right:-9px;background:var(--clay);color:#fff;border-radius:99px;font:700 .7rem sans-serif;padding:2px 6px}
+.after{background:var(--sand);border-radius:14px;padding:6px 20px 18px;margin:26px 0}
 *{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--char);font:17px/1.6 'Source Serif 4',Georgia,serif}a{color:#9a3f18}
 h1,h2{font-family:'Bricolage Grotesque',system-ui,sans-serif;line-height:1.1;letter-spacing:-.01em}h1{font-size:clamp(2.1rem,8vw,3.4rem);font-weight:800;margin:.15em 0 .3em}
 .skip{position:absolute;left:-999px}.skip:focus{left:6px;top:6px;background:#fff;padding:6px}
