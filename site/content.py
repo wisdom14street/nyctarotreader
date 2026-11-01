@@ -74,10 +74,10 @@ def pages():
     G.add('/what-to-ask/', 'Good Questions for Your First Tarot Reading | NYC Tarot Reader',
           'Simple questions that work well in a first tarot reading, a few that do not, and whether you need to share anything at all.', wa,
           crumbs=[('Today', '/'), ('What to ask', '/what-to-ask/')])
-    wc = (f'<section class="pg"><h1>What a tarot reading costs here</h1><table class="cost"><thead><tr><th>Time</th><th>Usual price</th></tr></thead><tbody>'
-          f'<tr><td>15 min</td><td>about $35 to $40</td></tr><tr><td>30 min</td><td>about $70 to $80</td></tr><tr><td>45 min</td><td>about $100 to $110</td></tr><tr><td>60 min</td><td>about $130 to $140</td></tr></tbody></table>'
-          f'<p>These ranges come from our readers\' posted prices; each profile lists the exact figures. A few specialists, mostly astrologers, charge more. Online booking can add a small amount; the booking page always shows your final price before you pay.</p>'
-          f'<h2>Tipping</h2><p>There is no tipping rule. If you would like to leave something extra, ask the staff.</p><p><a class="go" href="/book-today/">See prices for each reader</a></p></section>')
+    wc = (f'<section class="pg"><h1>What a tarot reading costs here</h1><table class="cost"><thead><tr><th>Length</th><th>Typical price</th></tr></thead><tbody>'
+          f'<tr><td>15 minutes</td><td>$35 to $40</td></tr><tr><td>30 minutes</td><td>$70 to $80</td></tr><tr><td>45 minutes</td><td>$100 to $110</td></tr><tr><td>60 minutes</td><td>$130 to $140</td></tr></tbody></table>'
+          f'<p>These ranges come from our readers\' posted prices; each profile lists the exact figures. A few specialists, mostly astrologers, charge more. The booking page always shows your final price before you pay.</p>'
+          f'<h2>Tipping</h2><p>Tipping is up to you. It is never expected.</p><p><a class="go" href="/book-today/">See prices for each reader</a></p></section>')
     G.add('/what-it-costs/', 'How Much Is a Tarot Reading in NYC? Our Prices | NYC Tarot Reader',
           'Typical tarot reading prices at NYC Tarot Reader in Manhattan: about $35 for 15 minutes up to about $140 for an hour, with exact prices before you pay.', wc,
           crumbs=[('Today', '/'), ('Cost', '/what-it-costs/')])
@@ -102,7 +102,7 @@ def pages():
         r = R[k]; first = r['name'].split()[0]
         blurb = dict(FLOOR).get(k) or MORE[k]
         spot = {'bookshop': 'At our 14th Street tables inside the shop.', 'upstairs': 'In a private room upstairs at 80 Fifth Avenue, Suite 1104.', 'both': 'Some days at the 14th Street tables, some days upstairs in Suite 1104.', 'remote': 'Remote sessions only right now.'}[r['home']]
-        body = (f'<section class="pg"><p class="stub">Reader card</p><div class="card"><img src="{E(G.img(r["img"], 300))}" alt="{E(r["name"])}" width="120" height="120"><div><h1>{E(r["name"])}</h1><p>{E(blurb)}</p></div></div>'
+        body = (f'<section class="pg"><p class="stub">Reader card</p><div class="card"><img src="{E(G.headshot(k, 300))}" alt="{E(r["name"])}" width="120" height="120"><div><h1>{E(r["name"])}</h1><p>{E(blurb)}</p></div></div>'
                 f'<p><b>Where:</b> {spot}' + (' Phone sessions too.' if r['phone'] else '') + '</p>'
                 f'<h2>Lengths and prices</h2>{G.services_list(k, "table")}'
                 f'<p class="btns"><a class="go" href="{E(r["book"])}" rel="nofollow noopener">See {E(first)}\'s open times</a><a class="alt" href="tel:{G.TEL}">Call {G.PHONE}</a></p>'
