@@ -28,7 +28,7 @@ MORE = {'rebecca-martinez': 'Hears guidance as she reads; sessions in Spanish or
         'high-priestess-judith': 'La Gitana. Love questions are her favorite kind.',
         'damon-stang': 'A long-time professional who blends cards with folk magic.',
         'jennifer-shanteau': 'Not tarot: hypnotherapy and a quick energy cleansing.',
-        'dainichi-lazuli': 'Charges by the quarter hour, so a short first session is easy.',
+        'dainichi-lazuli': 'Charges in 15-minute blocks, so a short first session is easy.',
         'mallika': 'Lenormand cards first, then tarot to explain them.',
         'lu-camy': 'Reads her own oracle deck; also a hypnotist.',
         'mychal-a-bryan': 'Hour-long chart or Qabalistic tarot sessions, from afar.'}
