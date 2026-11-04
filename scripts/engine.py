@@ -27,6 +27,12 @@ CALENDAR = SHOP + '/pages/calendar'
 GA_ID = (CFG.get('GA_MEASUREMENT_ID') or '').strip()
 C = None
 
+def namaste_url(path='/', placement='site'):
+    """Static referral labels only; never copy a visitor's query string or details."""
+    return SHOP + path + '?' + urllib.parse.urlencode({
+        'utm_source': DOMAIN, 'utm_medium': 'referral',
+        'utm_campaign': 'namaste_network', 'utm_content': placement})
+
 def ldjson(o): return '<script type="application/ld+json">' + json.dumps(o, ensure_ascii=False).replace('</', '<\\/') + '</script>'
 ADDRESS_LD = {'@type': 'PostalAddress', 'streetAddress': STREET, 'addressLocality': CITY, 'addressRegion': REGION, 'postalCode': ZIP, 'addressCountry': 'US'}
 def org_ld():
@@ -157,14 +163,14 @@ def headshot(k, n=480): return f'/img/readers/{k}-{160 if n <= 240 else 480}.jpg
 def person_ld(k, path):
     r = readers()[k]
     return {'@context': 'https://schema.org', '@type': 'Person', 'name': r['name'], 'image': SITE + headshot(k), 'url': SITE + path, 'jobTitle': r.get('spec', ''),
-            'worksFor': {'@id': SITE + '/#business'}}
+            'worksFor': {'@type': 'Organization', 'name': 'Namaste Bookshop', 'url': SHOP + '/'}}
 # ---------- page assembly ----------
 PAGES = []
 def add(path, title, desc, body, ld=(), crumbs=None, nav=None, robots=None, sitemap=True, ogimg='/og.jpg', preload=''):
     PAGES.append(dict(path=path, title=title, desc=desc, body=body, ld=list(ld), crumbs=crumbs, nav=nav, robots=robots, sitemap=sitemap, ogimg=ogimg, preload=preload))
 def ga_head():
     if PREVIEW or not GA_ID: return ''
-    cfg = json.dumps({'site_brand': BRAND}).replace('</', '<\\/')
+    cfg = json.dumps({'site_brand': BRAND, 'site_domain': DOMAIN}).replace('</', '<\\/')
     return (f'<script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>'
             f'<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments);}}gtag("js",new Date());gtag("config","{GA_ID}",{cfg});</script>')
 _FH = None
@@ -226,7 +232,9 @@ def build():
     open(os.path.join(dist, 'CNAME'), 'w').write(DOMAIN + '\n')
     sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for pg in PAGES:
-        if pg['sitemap'] and pg['robots'] is None: sm.append(f'<url><loc>{SITE}{urllib.parse.quote(pg["path"])}</loc><lastmod>{TODAY}</lastmod></url>')
+        # A rebuild is not evidence of a content update. Omit optional lastmod
+        # until actual per-page modification dates are available.
+        if pg['sitemap'] and pg['robots'] is None: sm.append(f'<url><loc>{SITE}{urllib.parse.quote(pg["path"])}</loc></url>')
     sm.append('</urlset>'); open(os.path.join(dist, 'sitemap.xml'), 'w').write('\n'.join(sm) + '\n')
     bots = ['Googlebot', 'Bingbot', 'OAI-SearchBot', 'ChatGPT-User', 'GPTBot', 'PerplexityBot', 'Google-Extended', 'ClaudeBot', 'Applebot']
     open(os.path.join(dist, 'robots.txt'), 'w').write(''.join(f'User-agent: {b}\nAllow: /\n\n' for b in bots) + f'User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n')
