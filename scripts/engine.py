@@ -219,7 +219,7 @@ def build():
     nf = dict(path='/404.html', title=f'Page not found | {BRAND}', desc=C.NOTFOUND_DESC, body=C.NOTFOUND, ld=[], crumbs=None, nav=None, robots='noindex', sitemap=False, ogimg='/og.jpg')
     open(os.path.join(dist, '404.html'), 'w').write(render(nf))
     open(os.path.join(dist, 'assets', 'site.css'), 'w').write(C.CSS)
-    for f in ('ga.js', 'cart.js', 'cart.css', 'shop.js', 'shop.css', 'no-photo.svg'):
+    for f in ('readers.js', 'ga.js', 'cart.js', 'cart.css', 'shop.js', 'shop.css', 'no-photo.svg'):
         if os.path.exists(os.path.join(ROOT, 'scripts', f)): shutil.copy(os.path.join(ROOT, 'scripts', f), os.path.join(dist, 'assets', f))
     if 'shop' in sys.modules: sys.modules['shop'].write_json(dist)
     if CATALOG:

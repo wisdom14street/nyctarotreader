@@ -32,7 +32,7 @@ MORE = {'rebecca-martinez': 'Hears guidance as she reads; sessions in Spanish or
         'mallika': 'Lenormand cards first, then tarot to explain them.',
         'lu-camy': 'Reads her own oracle deck; also a hypnotist.',
         'mychal-a-bryan': 'Hour-long chart or Qabalistic tarot sessions, from afar.'}
-NAV = [('/', 'Today'), ('/book-today/', 'Readers'), ('/walk-in-or-book/', 'Walk in or book'), ('/what-to-ask/', 'What to ask'), ('/what-it-costs/', 'Cost'), ('/at-the-table/', 'At the table'), ('/your-own-deck/', 'Your own deck'), ('/find-the-shop/', 'Find us')]
+NAV = [('/', 'Today'), ('/book-today/', 'Readers'), ('/phone-tarot-readings/', 'Phone readings'), ('/walk-in-or-book/', 'Walk in or book'), ('/what-to-ask/', 'What to ask'), ('/what-it-costs/', 'Cost'), ('/at-the-table/', 'At the table'), ('/your-own-deck/', 'Your own deck'), ('/find-the-shop/', 'Find us')]
 CART = True
 SHOP_PATH = '/your-own-deck/'
 import re
@@ -79,11 +79,22 @@ def deck_pages():
                     note='Tap Add on anything you like. When you are ready, one checkout covers it all; Namaste Bookshop takes the payment and posts it to you.',
                     search=('Search first decks and books', 'Try a deck name like Rider-Waite, or a word like beginner or pocket.'))
 
+def reader_card(k, placement):
+    r = R[k]
+    formats = (['remote'] if r['home'] == 'remote' else ['inperson']) + (['phone'] if r['phone'] else [])
+    location = {'bookshop': 'Inside Namaste Bookshop', 'upstairs': 'Upstairs · Suite 1104', 'both': 'Bookshop or upstairs · confirm location', 'remote': 'Remote sessions'}[r['home']]
+    return (f'<li data-reader-card data-formats="{" ".join(formats)}" data-price="{r["from"]}">'
+            f'<div class="reader-summary"><img src="{E(G.headshot(k, 160))}" alt="" width="64" height="64" loading="lazy"><h3><a href="/readers/{k}/">{E(r["name"])}</a></h3></div>'
+            f'<p>{E(dict(FLOOR).get(k) or MORE[k])}</p><p class="sm">{E(location)}' + (' · Phone option' if r['phone'] else '') + '</p>'
+            f'<p><b>Guide prices from ${r["from"]}</b></p><div class="reader-actions"><a class="go" href="{E(r["book"])}" data-reader-id="{E(k)}" data-placement="{placement}" rel="nofollow noopener" aria-label="Check times for {E(r["name"])}">Check times on Square</a>'
+            f'<a href="/readers/{k}/">Services &amp; prices</a></div></li>')
+
 def shell(pg):
     nav = ''.join(f'<a href="{h}"' + (' class="here"' if pg['path'] == h else '') + f'>{t}</a>' for h, t in NAV)
+    next_step = ('<aside class="booking-next"><h2>Ready to choose your reader?</h2><p>Compare listed services and guide prices, then choose an open time on Square.</p><a class="go" href="/book-today/" data-placement="guide_end">Find a reader &amp; check times</a></aside>' if pg['path'] in ('/what-to-ask/', '/at-the-table/', '/find-the-shop/', '/what-it-costs/', '/walk-in-or-book/') else '')
     return (f'<body><a class="skip" href="#main">Skip to content</a><div class="strip">First tarot reading in New York? Start here.</div>'
-            f'<header class="hdr"><a class="nm" href="/">NYC<span>Tarot Reader</span></a><span class="hr"><a class="today" href="/book-today/">Book for today</a>{G.cart_button()}</span></header>'
-            f'<nav class="tabs" aria-label="Guide">{nav}</nav><main id="main">{pg["body"]}</main>'
+            f'<header class="hdr"><a class="nm" href="/">NYC<span>Tarot Reader</span></a><span class="hr"><a class="today" href="/book-today/">Find a reading</a>{G.cart_button()}</span></header>'
+            f'<nav class="tabs" aria-label="Guide">{nav}</nav><main id="main">{pg["body"]}{next_step}</main>'
             f'<footer class="ftr"><p><b>NYC Tarot Reader</b> &middot; first tarot readings on West 14th Street. Inside <a href="{E(G.namaste_url("/", "footer"))}">Namaste Bookshop</a>, {G.ADDR}. Operated by Wealth Edge Ventures Inc.</p>'
             f'<p><a href="tel:{G.TEL}">{G.PHONE}</a> &middot; <a href="mailto:{G.EMAIL}">{G.EMAIL}</a> &middot; <a href="/privacy/">Privacy</a></p></footer></body></html>')
 
@@ -97,14 +108,20 @@ def pages():
           robots='noindex', sitemap=False, crumbs=[('Home', '/'), ('Your cart', '/cart/')])
     home = (f'<section class="ticket"><p class="stub">Admit one &middot; NYC Tarot Reader &middot; 2 W 14th St</p><h1>Plan your first tarot reading in NYC</h1>'
             f'<p class="sub">No experience needed and nothing to prepare except a question. This short guide walks you from "I have never done this" to sitting at the table on 14th Street, a few steps from Fifth Avenue.</p>'
-            f'<p>Looking for a reading today? Check available times before you come.</p><p class="btns"><a class="go" href="/book-today/">Find a reader and check times</a><a class="alt" href="tel:{G.TEL}">Call {G.PHONE}</a></p></section>'
+            f'<p><b>Inside Namaste Bookshop · Near Union Square</b><br>15-minute tarot guide prices: $35–$40. Online/card totals may differ.</p><p>Looking for a reading today? Check available times before you come.</p><p class="btns"><a class="go" href="/book-today/" data-placement="home_hero">Find a reader and check times</a><a class="alt" href="tel:{G.TEL}">Call {G.PHONE}</a></p></section>'
             f'<ol class="five">' + ''.join(f'<li id="{s}"><h2>{t}</h2><p>{d}</p></li>' for s, t, d in STEPS) + '</ol>'
             f'<section class="today-box"><h2>Bookshop hours</h2><ul class="hrs">' + ''.join(f'<li><span>{d}</span><b>{h}</b></li>' for d, h in G.HOURS) + '</ul>'
             f'<p>Hours are in New York time; holiday hours may differ. Readers keep their own schedules. Check <a href="{E(G.namaste_url("/pages/calendar", "home_calendar"))}" data-link-type="calendar">Namaste\'s current reader calendar</a> and the reader\'s booking page for open times.</p></section>'
-            f'<section class="floor"><h2>Readers at our 14th Street tables</h2><p>Any of them is a fine choice for a first reading. Tap a name for their prices and times.</p><ul>'
-            + ''.join(f'<li><a href="/readers/{k}/"><b>{E(R[k]["name"])}</b><span>{E(l)}</span><em>from ${R[k]["from"]}</em></a></li>' for k, l in FLOOR) + '</ul>'
+            f'<section class="floor"><h2>Readers at our 14th Street tables</h2><p>Any of them is a fine choice for a first reading. Compare their services or go straight to their Square booking page. Listed guide prices may differ from online/card totals.</p><ul>'
+            + ''.join(reader_card(k, 'home_readers') for k, l in FLOOR) + '</ul>'
             f'<p class="sm">More readers work in private rooms upstairs; <a href="/book-today/">see everyone</a>.</p></section>'
             + f'<section class="after"><h2>After the reading: your own deck</h2><p>Want to try it at home? We keep a short shelf of easy first decks, starter kits and beginner books.</p><p><a class="go" href="/your-own-deck/">See first decks</a></p></section>')
+    # Put bookable choices before the long first-visit guide.
+    start, end = home.index('<section class="floor">'), home.index('<section class="after">')
+    choices = home[start:end]
+    home = home[:start] + home[end:]
+    at = home.index('<ol class="five">')
+    home = home[:at] + choices + home[at:]
     G.add('/', 'NYC Tarot Reader | Your First Tarot Reading at Namaste Bookshop',
           'Plan your first tarot reading at Namaste Bookshop near Union Square: explore readers, prices and what to expect. Check availability for a same-day session.', home,
           ld=[G.shop_ld()])
@@ -160,21 +177,44 @@ def pages():
                 f'<p><b>Where:</b> {spot}' + (' Phone sessions too.' if r['phone'] else '') + '</p>'
                 f'<h2>Lengths and prices</h2>{G.services_list(k, "table")}'
                 f'<p class="sm">Listed guide prices; online/card totals may differ. Confirm the current service, price, location and cancellation terms on Square before booking. For a phone session, choose an available phone service on Square.</p>'
-                f'<p class="btns"><a class="go" href="{E(r["book"])}" data-reader-id="{E(k)}" rel="nofollow noopener">See {E(first)}\'s open times</a><a class="alt" href="tel:{G.TEL}">Call {G.PHONE}</a></p>'
+                f'<p class="btns"><a class="go" href="{E(r["book"])}" data-reader-id="{E(k)}" data-placement="reader_profile" rel="nofollow noopener">See {E(first)}\'s open times</a><a class="alt" href="tel:{G.TEL}">Call {G.PHONE}</a></p>'
                 f'<p class="sm">The button opens {E(first)}\'s Square scheduling page. Choose an available time and follow its confirmation steps to book.</p>'
                 f'<p><a href="{E(G.namaste_url("/pages/book-a-reading", "reader_" + k))}" data-link-type="readers" data-reader-id="{E(k)}">See Namaste Bookshop\'s current reader list and prices</a>.</p><p><a href="/book-today/">Explore readers</a></p></section>')
         service = {'jennifer-shanteau': 'Hypnotherapy & Energy Work', 'lu-camy': 'Oracle Readings & Hypnosis', 'mychal-a-bryan': 'Remote Tarot & Astrology'}.get(k, 'Tarot Readings')
         place = 'Remote sessions through Namaste Bookshop.' if r['home'] == 'remote' else 'Sessions at Namaste Bookshop in Manhattan.'
         G.add(f'/readers/{k}/', f'{r["name"]}: {service} | NYC Tarot Reader', f'{r["name"]}: {service.lower()}. {place} Listed sessions from ${r["from"]}; check current times and prices before booking.', body,
               ld=[G.person_ld(k, f'/readers/{k}/')], crumbs=[('Today', '/'), ('Readers', '/book-today/'), (r['name'], f'/readers/{k}/')])
-    row = lambda k: f'<li><a href="/readers/{k}/"><b>{E(R[k]["name"])}</b><span>{E(dict(FLOOR).get(k) or MORE[k])}</span><em>from ${R[k]["from"]}</em></a></li>'
-    bt = ('<section class="pg floor"><h1>Find a reader and check available times</h1><p>Explore these readers, compare their listed services, then check their booking pages. Same-day sessions depend on availability.</p>'
-          f'<p><a href="{E(G.namaste_url("/pages/book-a-reading", "reader_directory"))}" data-link-type="readers">View the full current reader list at Namaste Bookshop</a> or <a href="{E(G.namaste_url("/pages/calendar", "reader_calendar"))}" data-link-type="calendar">check the reader calendar</a>.</p>'
-          '<h2>At the 14th Street tables</h2><ul>' + ''.join(row(k) for k, _ in FLOOR) + '</ul>'
-          '<h2>Upstairs, by appointment</h2><ul>' + ''.join(row(k) for k in UP) + '</ul>'
-          '<h2>Remote sessions</h2><ul>' + ''.join(row(k) for k in REMOTE) + '</ul></section>')
+    row = lambda k: reader_card(k, 'reader_directory')
+    bt = ('<section class="pg floor" data-reader-directory><h1>Find your NYC reading</h1><p>Compare readers and go directly to their booking pages. Choose a service, review the current price and terms, then select an open time and complete Square’s confirmation steps.</p>'
+          '<p><b>Same-day sessions depend on availability.</b> These are listed guide prices, not live quotes; online/card totals may differ. A starting price may apply to a different service than the one you choose.</p>'
+          f'<p><a href="{E(G.namaste_url("/pages/calendar", "reader_calendar"))}" data-link-type="calendar">See Namaste’s reader calendar</a> · <a href="tel:{G.TEL}">Need help choosing? Call {G.PHONE}</a></p>'
+          '<div class="reader-filters" data-reader-filters hidden><label for="reader-format">Session format<select id="reader-format"><option value="">All formats</option><option value="inperson">In person</option><option value="phone">Phone option</option><option value="remote">Remote only</option></select></label>'
+          '<label for="reader-budget">Starting guide price<select id="reader-budget"><option value="">Any price</option><option value="40">$40 or less</option><option value="80">$80 or less</option></select></label><button type="button" data-reader-reset>Reset filters</button><p data-reader-count role="status" aria-live="polite"></p></div>'
+          '<p data-reader-empty hidden>No readers match these preferences. Reset the filters or call the shop for help.</p>'
+          '<section data-reader-group><h2>At the 14th Street tables</h2><ul>' + ''.join(row(k) for k, _ in FLOOR) + '</ul></section>'
+          '<section data-reader-group><h2>Upstairs, by appointment</h2><ul>' + ''.join(row(k) for k in UP) + '</ul></section>'
+          '<section data-reader-group><h2>Remote sessions</h2><ul>' + ''.join(row(k) for k in REMOTE) + '</ul></section>'
+          f'<p><a href="{E(G.namaste_url("/pages/book-a-reading", "reader_directory"))}" data-link-type="readers">View Namaste Bookshop’s current reader list</a>. Your appointment is booked only after you complete the scheduling provider’s confirmation steps.</p></section><script src="/assets/readers.js" defer></script>')
     G.add('/book-today/', 'Find a Tarot Reader in NYC: Services & Booking | NYC Tarot Reader', 'Explore Namaste Bookshop readers, listed service prices and booking links. Check current availability for in-person or remote sessions.', bt,
           crumbs=[('Today', '/'), ('Readers', '/book-today/')])
+    phone_faq = [
+        ('How do I book a phone reading?', 'Choose one of the readers below, open Square and select a Phone Session service. Review the duration, price, time zone and cancellation terms before confirming. Enter the phone number where your reader can reach you in the booking provider’s form.'),
+        ('Do I have to be in New York?', 'You do not need to visit the shop. Namaste offers phone sessions with its New York readers. Check the time zone shown when choosing your appointment and follow the instructions in your confirmation.'),
+        ('How much is a phone reading?', 'The starting guide prices below come from the reader list. They are not online phone-session quotes. The exact price depends on your reader, service and duration; review the current total on Square before paying.'),
+        ('What if there is no Phone Session available?', 'Do not book an in-person service expecting a phone call. Try another reader or contact Namaste Bookshop for help. Availability varies by reader and day.')]
+    phone = ('<section class="pg floor"><p class="stub">Namaste Bookshop · NYC readers, by phone</p><h1>Phone tarot readings with New York readers</h1>'
+             '<p>Want a reading without traveling to Union Square? These Namaste Bookshop readers list phone options. Compare their approaches below, then select an available <b>Phone Session</b> on Square.</p>'
+             '<p><a class="go" href="#phone-readers">Compare phone readers</a> <a href="/book-today/">Prefer an in-person session?</a></p>'
+             '<h2>Before you book</h2><ol><li>Choose a reader and open their booking page.</li><li>Select a phone service, not an in-person appointment. Review the service description, current price and cancellation terms.</li><li>Check the appointment time zone and provide your callback number to Square. Finish the provider’s confirmation steps.</li></ol>'
+             '<h2 id="phone-readers">Choose a reader with phone options</h2><p>Guide prices may differ from online/card totals. Open Square to check the exact phone service and availability.</p><ul>'
+             + ''.join(reader_card(k, 'phone_landing') for k in R if R[k]['phone']) + '</ul>'
+             '<h2>Getting ready for the call</h2><p>Find a quiet place, charge your phone and have your booking confirmation nearby. Write down one focused question or a few topics you want to discuss. Your reader can describe the cards as the session unfolds; you can ask follow-up questions.</p>'
+             '<p>For ideas, read <a href="/what-to-ask/">what to ask at your first tarot reading</a>. If you would rather sit across the table from your reader, see <a href="/find-the-shop/">directions to Namaste near Union Square</a>.</p>'
+             '<h2>Phone reading questions</h2><dl class="qa">' + ''.join(f'<dt>{E(q)}</dt><dd>{E(a)}</dd>' for q, a in phone_faq) + '</dl>'
+             f'<p>For current service instructions, see <a href="{E(G.namaste_url("/pages/phone-tarot-readings", "phone_landing"))}">Namaste’s phone reading guide</a> or call <a href="tel:{G.TEL}">{G.PHONE}</a>.</p></section>')
+    G.add('/phone-tarot-readings/', 'Phone Tarot Readings with NYC Readers | Namaste Bookshop',
+          'Compare five Namaste Bookshop readers offering phone sessions. Explore their approaches, check current prices and choose an available phone reading on Square.', phone,
+          ld=[G.faq_ld(phone_faq)], crumbs=[('Home', '/'), ('Phone readings', '/phone-tarot-readings/')])
     G.add('/privacy/', 'Privacy | NYC Tarot Reader', 'Analytics and booking privacy on nyctarotreader.com.',
           '<section class="pg">' + G.privacy('nyctarotreader.com does not collect names, emails or payments itself; reserving opens your reader\'s scheduling page.', products=True) + '</section>', crumbs=[('Today', '/'), ('Privacy', '/privacy/')])
 
@@ -210,3 +250,9 @@ main{max-width:900px;margin:0 auto;padding:0 16px 30px}
 .cost{width:100%;border-collapse:collapse;background:#fff}.cost td,.cost th{padding:10px;border-bottom:1px solid var(--sand);text-align:left}.tl li{margin:.5em 0}.addr{font:700 1.2rem 'Bricolage Grotesque',sans-serif}
 .ftr{background:var(--char);color:#e9dccb;padding:22px 16px;font-size:.9rem}.ftr a{color:#f2b28f}
 """
+
+CSS += """
+[hidden]{display:none!important}.floor li[data-reader-card]{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column}.reader-summary{display:flex;gap:12px;align-items:center}.reader-summary img{border-radius:50%;object-fit:cover;flex:none}.reader-summary h3{font:700 1.15rem var(--display);margin:0}.reader-summary a{color:var(--char)}.floor li[data-reader-card] p{margin:.5em 0}.reader-actions{margin-top:auto;padding-top:12px;display:flex;flex-direction:column;align-items:flex-start;gap:12px}.reader-actions .go{width:100%;text-align:center}.reader-filters{background:var(--sand);padding:16px;border-radius:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:end}.reader-filters label{flex:1;min-width:180px;font-weight:600}.reader-filters select{display:block;width:100%;font:inherit;padding:10px;border:1px solid var(--muted);border-radius:6px;background:white;color:var(--char)}.reader-filters button{font:inherit;padding:10px;background:white;border:1px solid var(--muted);border-radius:6px;cursor:pointer}.reader-filters p{width:100%;margin:0;font-size:.9rem}.booking-next{background:var(--sand);padding:20px;border-radius:12px;margin:24px 0}a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid var(--char);outline-offset:4px}
+"""
+
+CSS += "dl.qa{display:block;background:transparent;color:var(--char);font:inherit;text-align:left;cursor:auto;margin:1em 0;border-radius:0}"

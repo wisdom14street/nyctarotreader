@@ -17,8 +17,8 @@ def digest(data):
 
 def manifest(sha):
     paths = ['index.html', 'cart/index.html', 'book-today/index.html',
-             'privacy/index.html', 'sitemap.xml', 'robots.txt',
-             'assets/ga.js', 'assets/cart.js', 'assets/shop.js']
+             'phone-tarot-readings/index.html', 'privacy/index.html', 'sitemap.xml', 'robots.txt',
+             'assets/readers.js', 'assets/site.css', 'assets/ga.js', 'assets/cart.js', 'assets/shop.js']
     paths += ['readers/' + key + '/index.html' for key in json.loads((ROOT / 'site/readers.json').read_text())]
     paths += [str(next((ROOT / 'dist/products').glob('*/index.html')).relative_to(ROOT / 'dist'))]
     result = {'commit': sha, 'files': {p: digest((ROOT / 'dist' / p).read_bytes()) for p in paths}}
