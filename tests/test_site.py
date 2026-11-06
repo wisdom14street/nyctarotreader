@@ -118,6 +118,17 @@ class SiteTests(unittest.TestCase):
         for path in ('what-to-ask', 'at-the-table', 'find-the-shop', 'what-it-costs', 'walk-in-or-book'):
             self.assertIn('data-placement="guide_end"', self.pages[path + '/index.html'].source)
 
+    def test_phone_search_landing_is_accurate_and_linked(self):
+        readers = json.loads((ROOT / 'site/readers.json').read_text())
+        page = self.pages['phone-tarot-readings/index.html']
+        links = [a for a in page.elements('a') if a.get('data-placement') == 'phone_landing']
+        self.assertEqual({a['data-reader-id'] for a in links}, {k for k, r in readers.items() if r['phone']})
+        for a in links:
+            self.assertEqual(a['href'], readers[a['data-reader-id']]['book'])
+        self.assertTrue(any(s.get('@type') == 'FAQPage' for s in page.schemas))
+        for name in ('index.html', 'book-today/index.html', 'what-to-ask/index.html'):
+            self.assertTrue(any(a.get('href') == '/phone-tarot-readings/' for a in self.pages[name].elements('a')))
+
     def test_product_offer_matches_cached_variant(self):
         products = {p['handle']: p for p in json.loads((ROOT / 'data/products.json').read_text())}
         for name, page in self.pages.items():

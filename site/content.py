@@ -32,7 +32,7 @@ MORE = {'rebecca-martinez': 'Hears guidance as she reads; sessions in Spanish or
         'mallika': 'Lenormand cards first, then tarot to explain them.',
         'lu-camy': 'Reads her own oracle deck; also a hypnotist.',
         'mychal-a-bryan': 'Hour-long chart or Qabalistic tarot sessions, from afar.'}
-NAV = [('/', 'Today'), ('/book-today/', 'Readers'), ('/walk-in-or-book/', 'Walk in or book'), ('/what-to-ask/', 'What to ask'), ('/what-it-costs/', 'Cost'), ('/at-the-table/', 'At the table'), ('/your-own-deck/', 'Your own deck'), ('/find-the-shop/', 'Find us')]
+NAV = [('/', 'Today'), ('/book-today/', 'Readers'), ('/phone-tarot-readings/', 'Phone readings'), ('/walk-in-or-book/', 'Walk in or book'), ('/what-to-ask/', 'What to ask'), ('/what-it-costs/', 'Cost'), ('/at-the-table/', 'At the table'), ('/your-own-deck/', 'Your own deck'), ('/find-the-shop/', 'Find us')]
 CART = True
 SHOP_PATH = '/your-own-deck/'
 import re
@@ -197,6 +197,24 @@ def pages():
           f'<p><a href="{E(G.namaste_url("/pages/book-a-reading", "reader_directory"))}" data-link-type="readers">View Namaste Bookshop’s current reader list</a>. Your appointment is booked only after you complete the scheduling provider’s confirmation steps.</p></section><script src="/assets/readers.js" defer></script>')
     G.add('/book-today/', 'Find a Tarot Reader in NYC: Services & Booking | NYC Tarot Reader', 'Explore Namaste Bookshop readers, listed service prices and booking links. Check current availability for in-person or remote sessions.', bt,
           crumbs=[('Today', '/'), ('Readers', '/book-today/')])
+    phone_faq = [
+        ('How do I book a phone reading?', 'Choose one of the readers below, open Square and select a Phone Session service. Review the duration, price, time zone and cancellation terms before confirming. Enter the phone number where your reader can reach you in the booking provider’s form.'),
+        ('Do I have to be in New York?', 'You do not need to visit the shop. Namaste offers phone sessions with its New York readers. Check the time zone shown when choosing your appointment and follow the instructions in your confirmation.'),
+        ('How much is a phone reading?', 'The starting guide prices below come from the reader list. They are not online phone-session quotes. The exact price depends on your reader, service and duration; review the current total on Square before paying.'),
+        ('What if there is no Phone Session available?', 'Do not book an in-person service expecting a phone call. Try another reader or contact Namaste Bookshop for help. Availability varies by reader and day.')]
+    phone = ('<section class="pg floor"><p class="stub">Namaste Bookshop · NYC readers, by phone</p><h1>Phone tarot readings with New York readers</h1>'
+             '<p>Want a reading without traveling to Union Square? These Namaste Bookshop readers list phone options. Compare their approaches below, then select an available <b>Phone Session</b> on Square.</p>'
+             '<p><a class="go" href="#phone-readers">Compare phone readers</a> <a href="/book-today/">Prefer an in-person session?</a></p>'
+             '<h2>Before you book</h2><ol><li>Choose a reader and open their booking page.</li><li>Select a phone service, not an in-person appointment. Review the service description, current price and cancellation terms.</li><li>Check the appointment time zone and provide your callback number to Square. Finish the provider’s confirmation steps.</li></ol>'
+             '<h2 id="phone-readers">Choose a reader with phone options</h2><p>Guide prices may differ from online/card totals. Open Square to check the exact phone service and availability.</p><ul>'
+             + ''.join(reader_card(k, 'phone_landing') for k in R if R[k]['phone']) + '</ul>'
+             '<h2>Getting ready for the call</h2><p>Find a quiet place, charge your phone and have your booking confirmation nearby. Write down one focused question or a few topics you want to discuss. Your reader can describe the cards as the session unfolds; you can ask follow-up questions.</p>'
+             '<p>For ideas, read <a href="/what-to-ask/">what to ask at your first tarot reading</a>. If you would rather sit across the table from your reader, see <a href="/find-the-shop/">directions to Namaste near Union Square</a>.</p>'
+             '<h2>Phone reading questions</h2><dl class="qa">' + ''.join(f'<dt>{E(q)}</dt><dd>{E(a)}</dd>' for q, a in phone_faq) + '</dl>'
+             f'<p>For current service instructions, see <a href="{E(G.namaste_url("/pages/phone-tarot-readings", "phone_landing"))}">Namaste’s phone reading guide</a> or call <a href="tel:{G.TEL}">{G.PHONE}</a>.</p></section>')
+    G.add('/phone-tarot-readings/', 'Phone Tarot Readings with NYC Readers | Namaste Bookshop',
+          'Compare five Namaste Bookshop readers offering phone sessions. Explore their approaches, check current prices and choose an available phone reading on Square.', phone,
+          ld=[G.faq_ld(phone_faq)], crumbs=[('Home', '/'), ('Phone readings', '/phone-tarot-readings/')])
     G.add('/privacy/', 'Privacy | NYC Tarot Reader', 'Analytics and booking privacy on nyctarotreader.com.',
           '<section class="pg">' + G.privacy('nyctarotreader.com does not collect names, emails or payments itself; reserving opens your reader\'s scheduling page.', products=True) + '</section>', crumbs=[('Today', '/'), ('Privacy', '/privacy/')])
 

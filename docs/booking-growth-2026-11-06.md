@@ -35,3 +35,19 @@ script-free fallback, analytics events, cart and attributed checkout handoff.
 External booking and checkout requests are intercepted during local tests.
 Publication verifies exact hashes of 30 production pages/assets, now including
 reader-filter JavaScript and the stylesheet.
+
+## Organic traffic addition
+
+Added /phone-tarot-readings/ with five supported phone readers, practical booking
+and preparation instructions, visible FAQs with matching structured data, unique
+metadata and links from the main navigation. Automatic sitemap and llms.txt
+include the new page. Official source checked November 6, 2026:
+https://namastebookshop.com/pages/phone-tarot-readings
+Phone booking clicks carry placement=phone_landing. The release manifest now
+checks 31 files. Twelve unit tests and the expanded browser suite cover this page.
+
+Search Console connection was checked again: only sc-domain:namastebookshop.com
+is available. nyctarotreader.com is not available in the connected property list,
+so its query baseline, URL indexing status and sitemap submission cannot be
+verified through this connection. Do not substitute Namaste's traffic totals for
+this domain's results. No property access or verification settings were changed.

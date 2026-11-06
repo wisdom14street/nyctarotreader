@@ -120,6 +120,12 @@ def run():
             expect(page).to_have_url(base + '/book-today/')
             print('PASS: directory filters, empty/reset states, all direct bookings and homepage journey')
 
+            page.goto(base + '/phone-tarot-readings/')
+            phone_link = page.locator('a[data-placement="phone_landing"]').first
+            phone_link.click()
+            assert events()[-1][1] == 'booking_click'
+            assert events()[-1][2]['placement'] == 'phone_landing'
+
             page.goto(base + '/find-the-shop/')
             page.locator('a.go[href^="https://www.google.com/maps/"]').click()
             assert events()[-1][1] == 'directions_click'
@@ -214,7 +220,7 @@ def run():
             print('PASS: storage denial preserves in-page cart and attributed checkout link')
 
             page.set_viewport_size({'width': 390, 'height': 844})
-            for path in ('/', '/book-today/', '/readers/jennifer-shanteau/', '/products/' + products[0]['h'] + '/', '/cart/'):
+            for path in ('/', '/phone-tarot-readings/', '/book-today/', '/readers/jennifer-shanteau/', '/products/' + products[0]['h'] + '/', '/cart/'):
                 page.goto(base + path)
                 assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), path
             screenshots = ROOT / 'artifacts'
