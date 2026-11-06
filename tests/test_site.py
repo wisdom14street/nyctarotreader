@@ -102,6 +102,22 @@ class SiteTests(unittest.TestCase):
         self.assertNotIn('/readers/mychal-a-bryan/', upstairs)
         self.assertIn('/readers/mychal-a-bryan/', remote_section)
 
+    def test_direct_booking_directory_and_guides(self):
+        readers = json.loads((ROOT / 'site/readers.json').read_text())
+        page = self.pages['book-today/index.html']
+        links = [a for a in page.elements('a') if a.get('data-placement') == 'reader_directory']
+        self.assertEqual(len(links), len(readers))
+        self.assertEqual({a['data-reader-id'] for a in links}, set(readers))
+        for a in links:
+            self.assertEqual(a['href'], readers[a['data-reader-id']]['book'])
+        cards = [a for a in page.elements('li') if 'data-reader-card' in a]
+        self.assertEqual(len(cards), len(readers))
+        self.assertTrue(any('hidden' in a for a in page.elements('div') if 'data-reader-filters' in a))
+        home = self.pages['index.html'].source
+        self.assertLess(home.index('data-placement="home_readers"'), home.index('class="five"'))
+        for path in ('what-to-ask', 'at-the-table', 'find-the-shop', 'what-it-costs', 'walk-in-or-book'):
+            self.assertIn('data-placement="guide_end"', self.pages[path + '/index.html'].source)
+
     def test_product_offer_matches_cached_variant(self):
         products = {p['handle']: p for p in json.loads((ROOT / 'data/products.json').read_text())}
         for name, page in self.pages.items():

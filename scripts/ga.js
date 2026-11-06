@@ -18,7 +18,8 @@
     if(/^tel:/i.test(h))return['contact_click','phone'];
     if(/^mailto:/i.test(h))return['contact_click','email'];
     var u;try{u=new URL(h,location.href)}catch(_){return''}
-    if(u.protocol!=='https:'||u.origin===location.origin)return'';
+    if(u.origin===location.origin){if(a.dataset.placement&&u.pathname==='/book-today/')return['reader_directory_click','readers'];return'';}
+    if(u.protocol!=='https:')return'';
     if(u.hostname==='book.squareup.com'&&u.pathname.startsWith('/appointments/'))return['booking_click','booking'];
     if((u.hostname==='www.google.com'&&u.pathname.startsWith('/maps/'))||u.hostname==='maps.google.com')return['directions_click','directions'];
     if((u.hostname==='namastebookshop.com'||u.hostname==='www.namastebookshop.com')&&!u.pathname.startsWith('/cart'))return['namaste_referral_click',a.dataset.linkType||'shop'];
@@ -30,6 +31,7 @@
     var u=new URL(a.getAttribute('href'),location.href);
     var p={link_type:k[1],link_url:(u.protocol==='https:'?u.origin+u.pathname:u.protocol+u.pathname).slice(0,200),link_text:(a.textContent||'').trim().replace(/\s+/g,' ').slice(0,100),transport_type:'beacon'};
     if(a.dataset.readerId)p.reader_id=a.dataset.readerId;
+    if(a.dataset.placement)p.placement=a.dataset.placement;
     ga(k[0],p);
   }catch(_){}}
   document.addEventListener('click',track,true);

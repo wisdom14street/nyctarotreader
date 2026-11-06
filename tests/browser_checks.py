@@ -95,6 +95,31 @@ def run():
             assert len(events()) == 1
             print('PASS: all 18 booking routes emit one correctly identified click; unrelated links emit no booking or lead')
 
+            page.goto(base + '/book-today/')
+            cards = page.locator('[data-reader-card]:visible')
+            expect(cards).to_have_count(len(readers))
+            page.locator('#reader-format').select_option('remote')
+            expect(cards).to_have_count(1)
+            expect(cards).to_contain_text('Mychal')
+            page.locator('#reader-budget').select_option('40')
+            expect(cards).to_have_count(0)
+            expect(page.locator('[data-reader-empty]')).to_be_visible()
+            page.locator('[data-reader-reset]').click()
+            expect(cards).to_have_count(len(readers))
+            page.locator('#reader-format').select_option('phone')
+            expect(cards).to_have_count(sum(bool(r['phone']) for r in readers.values()))
+            page.locator('[data-reader-reset]').click()
+            for key, reader in readers.items():
+                link = page.locator('[data-reader-card] a[data-reader-id="' + key + '"]')
+                assert link.get_attribute('href') == reader['book']
+                link.click()
+                assert events()[-1][1] == 'booking_click'
+                assert events()[-1][2]['placement'] == 'reader_directory'
+            page.goto(base + '/')
+            page.locator('[data-placement="home_hero"]').click()
+            expect(page).to_have_url(base + '/book-today/')
+            print('PASS: directory filters, empty/reset states, all direct bookings and homepage journey')
+
             page.goto(base + '/find-the-shop/')
             page.locator('a.go[href^="https://www.google.com/maps/"]').click()
             assert events()[-1][1] == 'directions_click'
@@ -154,6 +179,10 @@ def run():
                 booking = plain_page.locator('a[data-reader-id][href^="https://book.squareup.com"]')
                 expect(booking).to_be_visible()
                 assert booking.get_attribute('href') == reader['book'], key
+            plain_page.goto(base + '/book-today/')
+            expect(plain_page.locator('[data-reader-card]')).to_have_count(len(readers))
+            expect(plain_page.locator('[data-reader-filters]')).to_be_hidden()
+            expect(plain_page.locator('[data-reader-card] a[data-reader-id]').first).to_be_visible()
             plain_page.goto(base + '/products/' + products[0]['h'] + '/')
             direct = plain_page.locator('a[data-link-type="product"]')
             expect(direct).to_be_visible()
