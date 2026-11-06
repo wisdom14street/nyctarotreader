@@ -141,6 +141,45 @@ def run():
             expect(page.locator('[data-count]')).to_contain_text('0 items match')
             print('PASS: product search and shelf filtering')
 
+            # The direct booking/product links must remain usable without scripts.
+            plain = browser.new_context(java_script_enabled=False)
+            plain.route('**/*', route)
+            plain_page = plain.new_page()
+            for key, reader in readers.items():
+                plain_page.goto(base + '/readers/' + key + '/')
+                booking = plain_page.locator('a[data-reader-id][href^="https://book.squareup.com"]')
+                expect(booking).to_be_visible()
+                assert booking.get_attribute('href') == reader['book'], key
+            plain_page.goto(base + '/products/' + products[0]['h'] + '/')
+            direct = plain_page.locator('a[data-link-type="product"]')
+            expect(direct).to_be_visible()
+            assert urlsplit(direct.get_attribute('href')).path == '/products/' + products[0]['h']
+            plain_page.goto(base + '/cart/')
+            expect(plain_page.locator('noscript a')).to_be_visible()
+            assert urlsplit(plain_page.locator('noscript a').get_attribute('href')).hostname == 'namastebookshop.com'
+            plain.close()
+            print('PASS: all booking links, product details and cart fallback remain visible without JavaScript')
+
+            # Storage restrictions should not prevent adding an item and handing
+            # off the current in-memory cart. Persistence cannot work in this mode.
+            restricted = browser.new_context()
+            restricted.route('**/*', route)
+            restricted.add_init_script("""
+                Object.defineProperty(window, 'localStorage', {get() {
+                    throw new DOMException('Storage disabled for regression check', 'SecurityError');
+                }});
+            """)
+            restricted_page = restricted.new_page()
+            restricted_page.on('pageerror', lambda error: errors.append(str(error)))
+            restricted_page.goto(base + '/products/' + products[0]['h'] + '/')
+            restricted_page.locator('#buy').click()
+            expect(restricted_page.locator('#cart')).to_be_visible()
+            local_checkout = restricted_page.locator('#cart [data-checkout]').get_attribute('href')
+            assert urlsplit(local_checkout).path == f'/cart/{products[0]["v"]}:1'
+            assert parse_qs(urlsplit(local_checkout).query)['attributes[Storefront]'] == ['nyctarotreader.com']
+            restricted.close()
+            print('PASS: storage denial preserves in-page cart and attributed checkout link')
+
             page.set_viewport_size({'width': 390, 'height': 844})
             for path in ('/', '/book-today/', '/readers/jennifer-shanteau/', '/products/' + products[0]['h'] + '/', '/cart/'):
                 page.goto(base + path)
