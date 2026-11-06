@@ -18,7 +18,7 @@
     if(/^tel:/i.test(h))return['contact_click','phone'];
     if(/^mailto:/i.test(h))return['contact_click','email'];
     var u;try{u=new URL(h,location.href)}catch(_){return''}
-    if(u.origin===location.origin){if(a.dataset.placement&&u.pathname==='/book-today/')return['reader_directory_click','readers'];return'';}
+    if(u.origin===location.origin){if(a.dataset.placement&&(u.pathname==='/book-today/'||u.pathname==='/phone-tarot-readings/'))return['reader_directory_click','readers'];return'';}
     if(u.protocol!=='https:')return'';
     if(u.hostname==='book.squareup.com'&&u.pathname.startsWith('/appointments/'))return['booking_click','booking'];
     if((u.hostname==='www.google.com'&&u.pathname.startsWith('/maps/'))||u.hostname==='maps.google.com')return['directions_click','directions'];

@@ -51,3 +51,18 @@ is available. nyctarotreader.com is not available in the connected property list
 so its query baseline, URL indexing status and sitemap submission cannot be
 verified through this connection. Do not substitute Namaste's traffic totals for
 this domain's results. No property access or verification settings were changed.
+
+## Returning visitor booking follow-up
+
+Moved the existing profile booking button above the service table so visitors who
+already chose a reader can check times earlier. The homepage now explicitly
+separates in-person reader selection from phone sessions. Directory format and
+budget selections are restored from whitelisted URL parameters; reset removes
+only those parameters and preserves campaign attribution. Existing booking URLs,
+prices and the number of profile booking links remain unchanged.
+
+Rechecked GA4 reporting: list_ga4_properties returned connected=false and no
+properties because the connected Google account lacks Analytics scope. Analytics
+reporting remains blocked pending Google Analytics connection in GSC Wizard.
+No reconnection or permissions changes were made. No supported Square connector
+was available for confirmed-booking reporting. No booking growth is claimed.
