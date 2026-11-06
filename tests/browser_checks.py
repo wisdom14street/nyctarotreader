@@ -70,6 +70,27 @@ def run():
             assert '?' not in events()[-1][2]['link_url']
             print('PASS: booking, middle-click, contact and referral intent events; no external navigation')
 
+            readers = json.loads((ROOT / 'site/readers.json').read_text())
+            for key, reader in readers.items():
+                page.goto(base + '/readers/' + key + '/')
+                booking = page.locator('a[data-reader-id][href^="https://book.squareup.com"]')
+                assert booking.get_attribute('href') == reader['book'], key
+                booking.click()
+                recorded = events()
+                assert len(recorded) == 1 and recorded[0][1] == 'booking_click', (key, recorded)
+                assert recorded[0][2]['reader_id'] == key
+                assert page.url == base + '/readers/' + key + '/'
+            # Query strings containing a booking URL must not turn unrelated links
+            # into bookings. Internal navigation must not become a lead either.
+            page.evaluate("""() => {
+                for (const href of ['/book-today/', 'https://example.com/?next=https://book.squareup.com/appointments/test']) {
+                    const a = document.createElement('a'); a.href = href; a.textContent = 'Book now';
+                    a.addEventListener('click', e => e.preventDefault()); document.body.append(a); a.click(); a.remove();
+                }
+            }""")
+            assert len(events()) == 1
+            print('PASS: all 18 booking routes emit one correctly identified click; unrelated links emit no booking or lead')
+
             page.goto(base + '/find-the-shop/')
             page.locator('a.go[href^="https://www.google.com/maps/"]').click()
             assert events()[-1][1] == 'directions_click'

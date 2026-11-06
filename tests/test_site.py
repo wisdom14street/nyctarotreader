@@ -89,6 +89,8 @@ class SiteTests(unittest.TestCase):
             self.assertEqual(len(bookings), 1, key)
             self.assertEqual(bookings[0]['href'], reader['book'], key)
             self.assertEqual(bookings[0]['data-reader-id'], key)
+            self.assertIn('online/card totals may differ', page.source, key)
+            self.assertIn('cancellation terms on Square', page.source, key)
             for _, price in reader['services']:
                 self.assertIn(f'<td>{price}</td>', page.source, key)
         hypno = self.pages['readers/jennifer-shanteau/index.html'].source

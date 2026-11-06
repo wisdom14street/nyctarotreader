@@ -129,7 +129,7 @@ def pages():
           crumbs=[('Today', '/'), ('What to ask', '/what-to-ask/')])
     wc = (f'<section class="pg"><h1>What a tarot reading costs here</h1><table class="cost"><thead><tr><th>Length</th><th>Typical price</th></tr></thead><tbody>'
           f'<tr><td>15 minutes</td><td>$35 to $40</td></tr><tr><td>30 minutes</td><td>$70 to $80</td></tr><tr><td>45 minutes</td><td>$100 to $110</td></tr><tr><td>60 minutes</td><td>$130 to $140</td></tr></tbody></table>'
-          f'<p>These ranges come from our readers\' posted prices; each profile lists the exact figures. A few specialists, mostly astrologers, charge more. The booking page always shows your final price before you pay.</p>'
+          f'<p>These ranges come from our readers\' posted guide prices. Online/card totals may differ. A few specialists, mostly astrologers, charge more. Review the current service price and cancellation terms on Square before confirming.</p>'
           f'<h2>Tipping</h2><p>Tipping is up to you. It is never expected.</p><p><a class="go" href="/book-today/">See prices for each reader</a></p></section>')
     G.add('/what-it-costs/', 'How Much Is a Tarot Reading in NYC? Our Prices | NYC Tarot Reader',
           'Typical tarot reading prices at NYC Tarot Reader in Manhattan: about $35 for 15 minutes up to about $140 for an hour, with exact prices before you pay.', wc,
@@ -159,7 +159,7 @@ def pages():
         body = (f'<section class="pg"><p class="stub">Reader card</p><div class="card"><img src="{E(G.headshot(k, 300))}" alt="{E(r["name"])}" width="120" height="120"><div><h1>{E(r["name"])}</h1><p>{E(blurb)}</p></div></div>'
                 f'<p><b>Where:</b> {spot}' + (' Phone sessions too.' if r['phone'] else '') + '</p>'
                 f'<h2>Lengths and prices</h2>{G.services_list(k, "table")}'
-                f'<p class="sm">Listed service prices; confirm the current service, price and location before booking.</p>'
+                f'<p class="sm">Listed guide prices; online/card totals may differ. Confirm the current service, price, location and cancellation terms on Square before booking. For a phone session, choose an available phone service on Square.</p>'
                 f'<p class="btns"><a class="go" href="{E(r["book"])}" data-reader-id="{E(k)}" rel="nofollow noopener">See {E(first)}\'s open times</a><a class="alt" href="tel:{G.TEL}">Call {G.PHONE}</a></p>'
                 f'<p class="sm">The button opens {E(first)}\'s Square scheduling page. Choose an available time and follow its confirmation steps to book.</p>'
                 f'<p><a href="{E(G.namaste_url("/pages/book-a-reading", "reader_" + k))}" data-link-type="readers" data-reader-id="{E(k)}">See Namaste Bookshop\'s current reader list and prices</a>.</p><p><a href="/book-today/">Explore readers</a></p></section>')
