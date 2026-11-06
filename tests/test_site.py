@@ -89,6 +89,7 @@ class SiteTests(unittest.TestCase):
             self.assertEqual(len(bookings), 1, key)
             self.assertEqual(bookings[0]['href'], reader['book'], key)
             self.assertEqual(bookings[0]['data-reader-id'], key)
+            self.assertLess(page.source.index('data-placement="reader_profile"'), page.source.index('<h2>Lengths and prices</h2>'))
             self.assertIn('online/card totals may differ', page.source, key)
             self.assertIn('cancellation terms on Square', page.source, key)
             for _, price in reader['services']:

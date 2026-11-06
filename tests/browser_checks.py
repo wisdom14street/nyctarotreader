@@ -117,8 +117,24 @@ def run():
                 assert events()[-1][2]['placement'] == 'reader_directory'
             page.goto(base + '/')
             page.locator('[data-placement="home_hero"]').click()
-            expect(page).to_have_url(base + '/book-today/')
+            expect(page).to_have_url(base + '/book-today/?format=inperson')
+            expect(page.locator('#reader-format')).to_have_value('inperson')
+            expect(page.locator('[data-reader-card]:visible')).to_have_count(17)
             print('PASS: directory filters, empty/reset states, all direct bookings and homepage journey')
+
+            page.goto(base + '/book-today/?format=phone&budget=40&utm_source=regression')
+            expect(page.locator('[data-reader-card]:visible')).to_have_count(5)
+            page.locator('#reader-budget').select_option('80')
+            assert parse_qs(urlsplit(page.url).query)['utm_source'] == ['regression']
+            page.reload()
+            expect(page.locator('#reader-format')).to_have_value('phone')
+            expect(page.locator('#reader-budget')).to_have_value('80')
+            page.locator('[data-reader-reset]').click()
+            assert parse_qs(urlsplit(page.url).query) == {'utm_source': ['regression']}
+            expect(page.locator('[data-reader-card]:visible')).to_have_count(18)
+            page.goto(base + '/book-today/?format=unknown&budget=0')
+            expect(page.locator('[data-reader-card]:visible')).to_have_count(18)
+            print('PASS: filter URLs restore choices, preserve source attribution, reset and reject unknown options')
 
             page.goto(base + '/phone-tarot-readings/')
             phone_link = page.locator('a[data-placement="phone_landing"]').first
