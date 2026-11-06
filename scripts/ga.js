@@ -1,6 +1,7 @@
-/* Google Analytics 4 events for the storefronts. Every call is guarded: if gtag is blocked or missing, nothing breaks.
-   view_item on product pages, generate_lead on call / email / booking / directions / claim-listing links.
-   add_to_cart and begin_checkout are sent from cart.js. */
+/* GA4 records visitor intent here, never a confirmed appointment or payment.
+   Contact, booking and referral clicks have separate custom events.
+   add_to_cart and begin_checkout are sent from cart.js. Only the system that
+   confirms an order or booking can report completion. Analytics must not block navigation. */
 (function(){
   function ga(n,p){try{if(typeof window.gtag==='function')window.gtag('event',n,p||{})}catch(_){}}
   window.niGA=ga;
@@ -12,20 +13,25 @@
       if(it)ga('view_item',{currency:'USD',value:it.price,items:[it]});
     }
   }catch(_){}
-  var BOOK=/(book\.squareup\.com|squareup\.com\/appointments|square\.site|setmore\.com|calendly\.com|acuityscheduling\.com|as\.me\/|vagaro\.com|booksy\.com|schedulicity\.com|simplybook|fresha\.com|\/book-a-reading|\/booking)/i,
-      MAPS=/(google\.[a-z.]+\/maps|maps\.google\.|goo\.gl\/maps|maps\.app\.goo\.gl|maps\.apple\.com)/i;
   function kind(a){
     var h=a.getAttribute('href')||'';
-    if(/^tel:/i.test(h))return'phone';
-    if(/^mailto:/i.test(h))return/^mailto:claim@/i.test(h)?'claim':'email';
+    if(/^tel:/i.test(h))return['contact_click','phone'];
+    if(/^mailto:/i.test(h))return['contact_click','email'];
     var u;try{u=new URL(h,location.href)}catch(_){return''}
-    if(u.origin===location.origin&&/^\/claim(\/|$)/.test(u.pathname))return'claim';
-    if(MAPS.test(u.href))return'directions';
-    if(BOOK.test(u.href)||(u.origin!==location.origin&&/^\s*book\b/i.test(a.textContent||'')))return'booking';
+    if(u.protocol!=='https:'||u.origin===location.origin)return'';
+    if(u.hostname==='book.squareup.com'&&u.pathname.startsWith('/appointments/'))return['booking_click','booking'];
+    if((u.hostname==='www.google.com'&&u.pathname.startsWith('/maps/'))||u.hostname==='maps.google.com')return['directions_click','directions'];
+    if((u.hostname==='namastebookshop.com'||u.hostname==='www.namastebookshop.com')&&!u.pathname.startsWith('/cart'))return['namaste_referral_click',a.dataset.linkType||'shop'];
     return'';
   }
-  document.addEventListener('click',function(e){try{
+  function track(e){try{
+    if(e.type==='auxclick'&&e.button!==1)return;
     var a=e.target&&e.target.closest&&e.target.closest('a[href]');if(!a)return;var k=kind(a);if(!k)return;
-    ga('generate_lead',{link_type:k,link_url:(a.getAttribute('href')||'').slice(0,200),link_text:(a.textContent||'').trim().replace(/\s+/g,' ').slice(0,100),transport_type:'beacon'});
-  }catch(_){}},true);
+    var u=new URL(a.getAttribute('href'),location.href);
+    var p={link_type:k[1],link_url:(u.protocol==='https:'?u.origin+u.pathname:u.protocol+u.pathname).slice(0,200),link_text:(a.textContent||'').trim().replace(/\s+/g,' ').slice(0,100),transport_type:'beacon'};
+    if(a.dataset.readerId)p.reader_id=a.dataset.readerId;
+    ga(k[0],p);
+  }catch(_){}}
+  document.addEventListener('click',track,true);
+  document.addEventListener('auxclick',track,true);
 })();

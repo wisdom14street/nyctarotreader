@@ -228,7 +228,7 @@ def p_ld(x, url):
     av = 'https://schema.org/InStock' if x['avail'] else 'https://schema.org/OutOfStock'
     pr = {'@context': 'https://schema.org', '@type': 'Product', 'name': x['name'] + (f': {x["sub"]}' if x['sub'] else ''), 'url': url,
           'sku': x['sku'] or str(x['v']), 'offers': {'@type': 'Offer', 'price': f'{x["p"]:.2f}', 'priceCurrency': 'USD', 'availability': av, 'url': url,
-          'itemCondition': 'https://schema.org/NewCondition', 'seller': {'@id': G.SITE + '/#business'}}}
+          'itemCondition': 'https://schema.org/NewCondition', 'seller': {'@type': 'BookStore', 'name': 'Namaste Bookshop', 'url': G.SHOP + '/'}}}
     if x['imgs']: pr['image'] = [pimg(i['src'], 1000) for i in x['imgs'][:6]]
     if x['pub']: pr['brand'] = {'@type': 'Brand', 'name': x['pub']}
     if x['gtin']: pr['gtin'] = x['gtin']
@@ -281,7 +281,8 @@ def product_page(x, cat, shelf_name, shelf_path, pool, crumbs_root, intro_html, 
             f' <span aria-hidden="true">&rsaquo;</span> <span aria-current="page">{E(x["name"])}</span></nav><div class="pgrid">{gallery(x)}<div class="pinfo">'
             f'<p class="kick">{E(shelf_name)}' + (' &middot; out of print' if x['oop'] else '') + f'</p><h1>{E(x["name"])}</h1>'
             + (f'<p class="psub">{E(x["sub"])}</p>' if x['sub'] else '') + (f'<p class="pby">by {E(x["author"])}</p>' if x['author'] else '')
-            + buy_block(x, cat) + f'<p class="ship">Ships from New York City. Shipping and tax are shown at checkout.</p>{intro_html}{dl}</div></div>'
+            + buy_block(x, cat) + f'<p class="ship">Sold and fulfilled by Namaste Bookshop. Shipping, tax, current price and availability are confirmed at checkout.</p>'
+            + f'<p><a href="{E(G.namaste_url("/products/" + x["h"], "product_details"))}" data-link-type="product">View current details at Namaste Bookshop</a>.</p>{intro_html}{dl}</div></div>'
             + (f'<section class="pdesc"><h2>{desc_head}</h2>{desc}</section>' if desc else '') + extra
             + (f'<section class="rel"><h2>You might also like</h2><ul class="grid">' + ''.join(card(y, cat) for y in rel) + '</ul></section>' if rel else '')
             + f'</section>{sticky(x, cat)}<script>window.NI_PRODUCT={json.dumps({"handle": x["h"], "v": x["v"]})}</script>')

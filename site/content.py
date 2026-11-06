@@ -5,7 +5,7 @@ E = G.E
 BUSINESS_TYPE = 'LocalBusiness'
 THEME_COLOR = '#b4532a'
 FONTS = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap'
-ORG_DESC = 'NYC Tarot Reader gives first-time tarot readings in Manhattan, often the same day, at tables on West 14th Street near Union Square.'
+ORG_DESC = 'NYC Tarot Reader helps first-time visitors choose a tarot session at Namaste Bookshop near Union Square. Same-day appointments depend on reader availability.'
 LLMS_NOTE = ('NYC Tarot Reader is a first-reading tarot service operated by Wealth Edge Ventures Inc. Readings take place inside Namaste Bookshop, 2 West 14th Street, New York. '
              'It is not a directory: each reader it lists has a profile here, and times are reserved on that reader\'s Square scheduling page.')
 R = json.load(open(os.path.join(os.path.dirname(__file__), 'readers.json')))
@@ -17,7 +17,7 @@ FLOOR = [('tyler-t-mann-tarot', 'Upbeat and practical, a good fit if you want co
          ('brinly-erin', 'Intuitive and encouraging, with a lot of focus on self-worth.'),
          ('lizanne', 'Likes to start from one clear question, which suits a short first session.')]
 STEPS = [('pick', 'Pick fifteen or thirty minutes', 'For a first reading, short is fine. Fifteen minutes covers one question; thirty lets you ask a follow-up or two.'),
-         ('choose', 'Choose walk-in or a booked time', 'Booking is the surest way to get a seat today. Walking in can work when a reader is free.'),
+         ('choose', 'Choose walk-in or a booked time', 'Check the reader\'s schedule before visiting. Same-day bookings and walk-ins depend on open appointment times.'),
          ('ask', 'Think of one question', 'Something you actually care about. It does not need to be clever.'),
          ('sit', 'Sit down and listen', 'The reader shuffles, lays cards and talks you through them. Ask anything that is unclear.'),
          ('after', 'Take one thing with you', 'Write down the card or sentence that stuck. That is the part worth keeping.')]
@@ -66,7 +66,7 @@ SHELVES = [('first-decks', '/your-own-deck/decks/', ('deck',), 'First decks', 'A
            ('cloths-and-pouches', '/your-own-deck/cloths-and-pouches/', ('cloth', 'bag'), 'Cloths & pouches', 'Reading Cloths and Deck Pouches',
             'A cloth to lay your cards on and a pouch to carry the deck in. Nice to have, never required.')]
 def p_intro(x):
-    if x['kind'] in ('deck', 'kit'): return '<p class="pnote">Not sure yet? Have a reading first and ask the reader which deck they started on. <a href="/book-today/">See who is reading today</a>.</p>'
+    if x['kind'] in ('deck', 'kit'): return '<p class="pnote">Not sure yet? Have a reading first and ask the reader which deck they started on. <a href="/book-today/">Explore readers and check availability</a>.</p>'
     if x['kind'] == 'book': return '<p class="pnote">Reads well next to any deck on our <a href="/your-own-deck/decks/">first decks</a> shelf.</p>'
     return '<p class="pnote">Optional. Plenty of readers use a bare table.</p>'
 def deck_pages():
@@ -84,28 +84,34 @@ def shell(pg):
     return (f'<body><a class="skip" href="#main">Skip to content</a><div class="strip">First tarot reading in New York? Start here.</div>'
             f'<header class="hdr"><a class="nm" href="/">NYC<span>Tarot Reader</span></a><span class="hr"><a class="today" href="/book-today/">Book for today</a>{G.cart_button()}</span></header>'
             f'<nav class="tabs" aria-label="Guide">{nav}</nav><main id="main">{pg["body"]}</main>'
-            f'<footer class="ftr"><p><b>NYC Tarot Reader</b> &middot; first tarot readings on West 14th Street. Inside Namaste Bookshop, {G.ADDR}. Operated by Wealth Edge Ventures Inc.</p>'
+            f'<footer class="ftr"><p><b>NYC Tarot Reader</b> &middot; first tarot readings on West 14th Street. Inside <a href="{E(G.namaste_url("/", "footer"))}">Namaste Bookshop</a>, {G.ADDR}. Operated by Wealth Edge Ventures Inc.</p>'
             f'<p><a href="tel:{G.TEL}">{G.PHONE}</a> &middot; <a href="mailto:{G.EMAIL}">{G.EMAIL}</a> &middot; <a href="/privacy/">Privacy</a></p></footer></body></html>')
 
 def pages():
     deck_pages()
-    home = (f'<section class="ticket"><p class="stub">Admit one &middot; NYC Tarot Reader &middot; 2 W 14th St</p><h1>Get your first tarot reading today</h1>'
+    cart = (f'<section class="pg cartpage" data-cart-page><h1>Your cart</h1>'
+            f'<p class="cmsg" role="status" aria-live="polite"></p><div class="cbody" data-cart-body></div>'
+            f'<noscript><p>JavaScript is needed to show the cart saved in this browser. You can also '
+            f'<a href="{E(G.namaste_url("/collections/beginner-tarot", "cart_fallback"))}">shop directly at Namaste Bookshop</a>.</p></noscript></section>')
+    G.add('/cart/', 'Your Cart | NYC Tarot Reader', 'Review your items before continuing to Namaste Bookshop checkout.', cart,
+          robots='noindex', sitemap=False, crumbs=[('Home', '/'), ('Your cart', '/cart/')])
+    home = (f'<section class="ticket"><p class="stub">Admit one &middot; NYC Tarot Reader &middot; 2 W 14th St</p><h1>Plan your first tarot reading in NYC</h1>'
             f'<p class="sub">No experience needed and nothing to prepare except a question. This short guide walks you from "I have never done this" to sitting at the table on 14th Street, a few steps from Fifth Avenue.</p>'
-            f'<p class="btns"><a class="go" href="/book-today/">See who can read for me today</a><a class="alt" href="tel:{G.TEL}">Call {G.PHONE}</a></p></section>'
+            f'<p>Looking for a reading today? Check available times before you come.</p><p class="btns"><a class="go" href="/book-today/">Find a reader and check times</a><a class="alt" href="tel:{G.TEL}">Call {G.PHONE}</a></p></section>'
             f'<ol class="five">' + ''.join(f'<li id="{s}"><h2>{t}</h2><p>{d}</p></li>' for s, t, d in STEPS) + '</ol>'
-            f'<section class="today-box"><h2>Are we open now?</h2><ul class="hrs">' + ''.join(f'<li><span>{d}</span><b>{h}</b></li>' for d, h in G.HOURS) + '</ul>'
-            f'<p>Readers keep their own schedules within those hours; each profile\'s booking button shows that reader\'s live open times.</p></section>'
+            f'<section class="today-box"><h2>Bookshop hours</h2><ul class="hrs">' + ''.join(f'<li><span>{d}</span><b>{h}</b></li>' for d, h in G.HOURS) + '</ul>'
+            f'<p>Hours are in New York time; holiday hours may differ. Readers keep their own schedules. Check <a href="{E(G.namaste_url("/pages/calendar", "home_calendar"))}" data-link-type="calendar">Namaste\'s current reader calendar</a> and the reader\'s booking page for open times.</p></section>'
             f'<section class="floor"><h2>Readers at our 14th Street tables</h2><p>Any of them is a fine choice for a first reading. Tap a name for their prices and times.</p><ul>'
             + ''.join(f'<li><a href="/readers/{k}/"><b>{E(R[k]["name"])}</b><span>{E(l)}</span><em>from ${R[k]["from"]}</em></a></li>' for k, l in FLOOR) + '</ul>'
             f'<p class="sm">More readers work in private rooms upstairs; <a href="/book-today/">see everyone</a>.</p></section>'
             + f'<section class="after"><h2>After the reading: your own deck</h2><p>Want to try it at home? We keep a short shelf of easy first decks, starter kits and beginner books.</p><p><a class="go" href="/your-own-deck/">See first decks</a></p></section>')
-    G.add('/', 'NYC Tarot Reader | Your First Tarot Reading in New York, Today',
-          'Never had a tarot reading? NYC Tarot Reader gets you one today on West 14th Street, Manhattan: five simple steps, real prices, and readers you can book now.', home,
+    G.add('/', 'NYC Tarot Reader | Your First Tarot Reading at Namaste Bookshop',
+          'Plan your first tarot reading at Namaste Bookshop near Union Square: explore readers, prices and what to expect. Check availability for a same-day session.', home,
           ld=[G.shop_ld()])
     wf = [('Can I just walk in?', 'You can walk in and ask. Whether someone can read for you right away depends on who is working and whether they have an open slot. Calling ahead on ' + G.PHONE + ' saves a wasted trip.'),
           ('How far ahead should I book?', 'Same-day booking often works. Weekends and evenings fill faster, so book earlier for those.'),
-          ('Can I pay with cash?', 'Yes. Cash at the counter is fine if the online booking page will not cooperate; phone us first and we will hold a seat.')]
-    wb = ('<section class="pg"><h1>Walk in, or book a time?</h1><div class="vs"><div><h2>Booking</h2><ul><li>Your seat is held</li><li>You pick the reader</li><li>You pay up front online</li></ul></div>'
+          ('Can I pay with cash?', 'Call Namaste Bookshop on ' + G.PHONE + ' to confirm payment options and availability before visiting.')]
+    wb = ('<section class="pg"><h1>Walk in, or book a time?</h1><div class="vs"><div><h2>Booking</h2><ul><li>Choose an available time</li><li>You pick the reader</li><li>Review payment and booking terms on Square</li></ul></div>'
           '<div><h2>Walking in</h2><ul><li>Good if you are already nearby</li><li>Depends on who is free</li><li>Check with staff when you arrive</li></ul></div></div>'
           '<p>If you have your heart set on a reading today, booking is the safer bet. Open <a href="/book-today/">today\'s readers</a>, pick one and choose an open time.</p>'
           '<dl class="qa">' + ''.join(f'<dt>{q}</dt><dd>{a}</dd>' for q, a in wf) + f'</dl><p><a class="go" href="/book-today/">Check today\'s openings</a></p></section>')
@@ -123,7 +129,7 @@ def pages():
           crumbs=[('Today', '/'), ('What to ask', '/what-to-ask/')])
     wc = (f'<section class="pg"><h1>What a tarot reading costs here</h1><table class="cost"><thead><tr><th>Length</th><th>Typical price</th></tr></thead><tbody>'
           f'<tr><td>15 minutes</td><td>$35 to $40</td></tr><tr><td>30 minutes</td><td>$70 to $80</td></tr><tr><td>45 minutes</td><td>$100 to $110</td></tr><tr><td>60 minutes</td><td>$130 to $140</td></tr></tbody></table>'
-          f'<p>These ranges come from our readers\' posted prices; each profile lists the exact figures. A few specialists, mostly astrologers, charge more. The booking page always shows your final price before you pay.</p>'
+          f'<p>These ranges come from our readers\' posted guide prices. Online/card totals may differ. A few specialists, mostly astrologers, charge more. Review the current service price and cancellation terms on Square before confirming.</p>'
           f'<h2>Tipping</h2><p>Tipping is up to you. It is never expected.</p><p><a class="go" href="/book-today/">See prices for each reader</a></p></section>')
     G.add('/what-it-costs/', 'How Much Is a Tarot Reading in NYC? Our Prices | NYC Tarot Reader',
           'Typical tarot reading prices at NYC Tarot Reader in Manhattan: about $35 for 15 minutes up to about $140 for an hour, with exact prices before you pay.', wc,
@@ -144,7 +150,8 @@ def pages():
           'How to get to your NYC Tarot Reader session inside Namaste Bookshop: subway lines, which corner to look for, and where upstairs readings happen.', fs,
           crumbs=[('Today', '/'), ('Find the shop', '/find-the-shop/')])
 
-    UP = [k for k in R if R[k]['home'] in ('upstairs', 'both', 'remote')]
+    UP = [k for k in R if R[k]['home'] in ('upstairs', 'both')]
+    REMOTE = [k for k in R if R[k]['home'] == 'remote']
     for k in R:
         r = R[k]; first = r['name'].split()[0]
         blurb = dict(FLOOR).get(k) or MORE[k]
@@ -152,18 +159,24 @@ def pages():
         body = (f'<section class="pg"><p class="stub">Reader card</p><div class="card"><img src="{E(G.headshot(k, 300))}" alt="{E(r["name"])}" width="120" height="120"><div><h1>{E(r["name"])}</h1><p>{E(blurb)}</p></div></div>'
                 f'<p><b>Where:</b> {spot}' + (' Phone sessions too.' if r['phone'] else '') + '</p>'
                 f'<h2>Lengths and prices</h2>{G.services_list(k, "table")}'
-                f'<p class="btns"><a class="go" href="{E(r["book"])}" rel="nofollow noopener">See {E(first)}\'s open times</a><a class="alt" href="tel:{G.TEL}">Call {G.PHONE}</a></p>'
-                f'<p class="sm">The button opens {E(first)}\'s Square scheduling page, which shows today\'s openings and takes payment to hold your seat.</p><p><a href="/book-today/">All readers</a></p></section>')
-        G.add(f'/readers/{k}/', f'{r["name"]}, Tarot Reader in NYC | NYC Tarot Reader', f'Book {r["name"]} for a tarot reading on West 14th Street, Manhattan. {blurb} From ${r["from"]}.', body,
+                f'<p class="sm">Listed guide prices; online/card totals may differ. Confirm the current service, price, location and cancellation terms on Square before booking. For a phone session, choose an available phone service on Square.</p>'
+                f'<p class="btns"><a class="go" href="{E(r["book"])}" data-reader-id="{E(k)}" rel="nofollow noopener">See {E(first)}\'s open times</a><a class="alt" href="tel:{G.TEL}">Call {G.PHONE}</a></p>'
+                f'<p class="sm">The button opens {E(first)}\'s Square scheduling page. Choose an available time and follow its confirmation steps to book.</p>'
+                f'<p><a href="{E(G.namaste_url("/pages/book-a-reading", "reader_" + k))}" data-link-type="readers" data-reader-id="{E(k)}">See Namaste Bookshop\'s current reader list and prices</a>.</p><p><a href="/book-today/">Explore readers</a></p></section>')
+        service = {'jennifer-shanteau': 'Hypnotherapy & Energy Work', 'lu-camy': 'Oracle Readings & Hypnosis', 'mychal-a-bryan': 'Remote Tarot & Astrology'}.get(k, 'Tarot Readings')
+        place = 'Remote sessions through Namaste Bookshop.' if r['home'] == 'remote' else 'Sessions at Namaste Bookshop in Manhattan.'
+        G.add(f'/readers/{k}/', f'{r["name"]}: {service} | NYC Tarot Reader', f'{r["name"]}: {service.lower()}. {place} Listed sessions from ${r["from"]}; check current times and prices before booking.', body,
               ld=[G.person_ld(k, f'/readers/{k}/')], crumbs=[('Today', '/'), ('Readers', '/book-today/'), (r['name'], f'/readers/{k}/')])
     row = lambda k: f'<li><a href="/readers/{k}/"><b>{E(R[k]["name"])}</b><span>{E(dict(FLOOR).get(k) or MORE[k])}</span><em>from ${R[k]["from"]}</em></a></li>'
-    bt = ('<section class="pg floor"><h1>Who can read for you today</h1><p>Pick a reader, check their prices, then tap through to their live open times. Short sessions are the easiest to get same-day.</p>'
+    bt = ('<section class="pg floor"><h1>Find a reader and check available times</h1><p>Explore these readers, compare their listed services, then check their booking pages. Same-day sessions depend on availability.</p>'
+          f'<p><a href="{E(G.namaste_url("/pages/book-a-reading", "reader_directory"))}" data-link-type="readers">View the full current reader list at Namaste Bookshop</a> or <a href="{E(G.namaste_url("/pages/calendar", "reader_calendar"))}" data-link-type="calendar">check the reader calendar</a>.</p>'
           '<h2>At the 14th Street tables</h2><ul>' + ''.join(row(k) for k, _ in FLOOR) + '</ul>'
-          '<h2>Upstairs, by appointment</h2><ul>' + ''.join(row(k) for k in UP) + '</ul></section>')
-    G.add('/book-today/', 'Book a Tarot Reading Today in NYC: Our Readers | NYC Tarot Reader', 'Every NYC Tarot Reader reader with prices and same-day booking, downstairs on 14th Street or upstairs by appointment.', bt,
+          '<h2>Upstairs, by appointment</h2><ul>' + ''.join(row(k) for k in UP) + '</ul>'
+          '<h2>Remote sessions</h2><ul>' + ''.join(row(k) for k in REMOTE) + '</ul></section>')
+    G.add('/book-today/', 'Find a Tarot Reader in NYC: Services & Booking | NYC Tarot Reader', 'Explore Namaste Bookshop readers, listed service prices and booking links. Check current availability for in-person or remote sessions.', bt,
           crumbs=[('Today', '/'), ('Readers', '/book-today/')])
     G.add('/privacy/', 'Privacy | NYC Tarot Reader', 'Analytics and booking privacy on nyctarotreader.com.',
-          '<section class="pg">' + G.privacy('nyctarotreader.com does not collect names, emails or payments itself; reserving opens your reader\'s scheduling page.') + '</section>', crumbs=[('Today', '/'), ('Privacy', '/privacy/')])
+          '<section class="pg">' + G.privacy('nyctarotreader.com does not collect names, emails or payments itself; reserving opens your reader\'s scheduling page.', products=True) + '</section>', crumbs=[('Today', '/'), ('Privacy', '/privacy/')])
 
 NOTFOUND_DESC = 'Page not found on nyctarotreader.com.'
 NOTFOUND = '<section class="pg"><h1>Wrong turn</h1><p>This page is not part of the guide. <a href="/">Start from step one</a>.</p></section>'
@@ -191,7 +204,7 @@ main{max-width:900px;margin:0 auto;padding:0 16px 30px}
 .five h2{margin:.25em 0 .2em;font-size:1.3rem}.five p{margin:0}
 .today-box{background:var(--sand);border-radius:14px;padding:6px 18px 14px}.hrs{list-style:none;padding:0}.hrs li{display:flex;justify-content:space-between;border-bottom:1px solid #e3cfb2;padding:6px 0}
 .floor ul{list-style:none;padding:0;display:grid;gap:8px}@media(min-width:700px){.floor ul{grid-template-columns:1fr 1fr}}
-.floor a{display:flex;flex-direction:column;background:#fff;padding:12px 14px;border-radius:10px;text-decoration:none;color:var(--char);border-left:5px solid var(--clay)}.floor b{font-family:'Bricolage Grotesque',sans-serif}.floor em{color:var(--clay);font-style:normal;font-weight:600;font-size:.9rem}
+.floor li>a{display:flex;flex-direction:column;background:#fff;padding:12px 14px;border-radius:10px;text-decoration:none;color:var(--char);border-left:5px solid var(--clay)}.floor b{font-family:'Bricolage Grotesque',sans-serif}.floor em{color:var(--clay);font-style:normal;font-weight:600;font-size:.9rem}
 .sm{font-size:.9rem}.pg{max-width:720px;padding-top:10px}.vs{display:grid;gap:12px}@media(min-width:640px){.vs{grid-template-columns:1fr 1fr}}.vs>div{background:#fff;border-radius:12px;padding:4px 16px}
 .qa dt{font-weight:600;margin-top:.8em}.qa dd{margin:.2em 0 0}.qs{list-style:none;padding:0}.qs li{background:#fff;margin:8px 0;padding:10px 14px;border-radius:10px}.qs b{display:block;color:var(--clay);font-family:'Bricolage Grotesque',sans-serif}
 .cost{width:100%;border-collapse:collapse;background:#fff}.cost td,.cost th{padding:10px;border-bottom:1px solid var(--sand);text-align:left}.tl li{margin:.5em 0}.addr{font:700 1.2rem 'Bricolage Grotesque',sans-serif}
