@@ -8,6 +8,8 @@ import json
 import os
 from pathlib import Path
 import shutil
+import subprocess
+import sys
 from threading import Thread
 from urllib.parse import parse_qs, urlsplit
 from playwright.sync_api import sync_playwright, expect
@@ -25,6 +27,8 @@ def run():
     Thread(target=server.serve_forever, daemon=True).start()
     base = f'http://127.0.0.1:{server.server_port}'
     try:
+        subprocess.run([sys.executable, 'scripts/release.py', 'manifest', '--sha', 'local-check'], cwd=ROOT, check=True)
+        subprocess.run([sys.executable, 'scripts/release.py', 'verify', '--url', base, '--sha', 'local-check'], cwd=ROOT, check=True)
         with sync_playwright() as p:
             executable = os.environ.get('CHROMIUM_PATH') or shutil.which('chromium')
             browser = p.chromium.launch(executable_path=executable, headless=True, args=['--no-sandbox'])

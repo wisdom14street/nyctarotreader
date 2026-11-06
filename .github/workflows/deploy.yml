@@ -21,6 +21,10 @@ jobs:
           python-version: "3.12"
       - name: Build nyctarotreader.com
         run: python3 scripts/build.py
+      - name: Validate generated site
+        run: python3 -m unittest discover -s tests -v
+      - name: Record release files
+        run: python3 scripts/release.py manifest --sha "$GITHUB_SHA"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -32,5 +36,11 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - id: deployment
         uses: actions/deploy-pages@v4
+      - name: Verify published pages and assets
+        run: python3 scripts/release.py verify --sha "$GITHUB_SHA"
